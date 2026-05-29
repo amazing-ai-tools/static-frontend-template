@@ -26,7 +26,8 @@ jobs:
           VITE_BUGZERO_APP_KEY: ${{ vars.BUGZERO_APP_KEY }}
           VITE_BUGZERO_WIDGET_URL: ${{ vars.BUGZERO_WIDGET_URL }}
 
-      - name: Deploy
+      - name: Deploy to Azure Static Web Apps
+        if: ${{ vars.HOSTING_PROVIDER == '' || vars.HOSTING_PROVIDER == 'azure_static_web_app' }}
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
@@ -34,3 +35,10 @@ jobs:
           action: upload
           app_location: dist
           skip_app_build: true
+
+      - name: Deploy to Cloudflare Pages
+        if: ${{ vars.HOSTING_PROVIDER == 'cloudflare_pages' }}
+        run: npx --yes wrangler@latest pages deploy dist --project-name "${{ vars.CLOUDFLARE_PROJECT_NAME }}" --branch main
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
